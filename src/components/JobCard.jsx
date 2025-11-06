@@ -8,7 +8,7 @@ const JobCard = ({ job }) => {
       <div className='min-h-44 w-full md:max-w-sm px-4 py-3 bg-white rounded-md shadow-md hover:scale-[1.05] transition-all duration-300'>
         <div className='flex items-center justify-between'>
           <span className='text-xs font-light text-gray-800'>
-            Deadline: {deadline}
+            Deadline: {deadline.split("T")[0]}
           </span>
           <span className='px-3 py-1 text-[8px] text-blue-800 uppercase bg-blue-200 rounded-full '>
             {category}
