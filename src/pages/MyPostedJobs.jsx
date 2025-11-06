@@ -2,6 +2,7 @@ import { useContext, useEffect, useState } from "react";
 import AuthContext from "../contexts/AuthContext";
 import axios from "axios";
 import PostedJobsRow from "../components/PostedJobsRow";
+import toast from "react-hot-toast";
 
 const MyPostedJobs = () => {
   const { user } = useContext(AuthContext);
@@ -15,6 +16,21 @@ const MyPostedJobs = () => {
     }
     getJobs();
   }, [user?.email]);
+
+  const handleDeleteJob = async (id) => {
+
+    try {
+      const result = await axios.delete(`${import.meta.env.VITE_API_URL}/job/${id}`);
+      if (result.data.success) {
+        const remaining = jobs.filter(job => job._id !== id);
+        setJobs(remaining);
+        toast.success("Deleted Successfully!");
+      }
+    } catch (err) {
+      console.log(err.message);
+      toast.error(err.message);
+    }
+  }
 
   return (
     <section className='container px-4 mx-auto py-12 mb-10'>
@@ -85,7 +101,7 @@ const MyPostedJobs = () => {
                 <tbody className='bg-white divide-y divide-gray-200 '>
                   {
                     jobs.map(job => (
-                      <PostedJobsRow key={job._id} job={job}></PostedJobsRow>
+                      <PostedJobsRow key={job._id} job={job} handleDeleteJob={handleDeleteJob}></PostedJobsRow>
                     ))
                   }
                 </tbody>
