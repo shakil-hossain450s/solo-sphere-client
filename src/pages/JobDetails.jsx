@@ -11,16 +11,17 @@ const JobDetails = () => {
   const [startDate, setStartDate] = useState(new Date());
   const { user } = useContext(AuthContext);
   const { job } = useLoaderData();
-  const { _id, job_title, category, deadline, description, min_price, max_price, buyer_name, buyer_email } = job;
+  const { _id, job_title, category, deadline, description, min_price, max_price, buyer_info: { buyer_name, buyer_email, buyer_photo } } = job;
 
   const handlePlaceBid = async (e) => {
-    if(user?.email === buyer_email) return toast.error("Action not permitted");
     e.preventDefault();
+
+    if (user?.email === buyer_email) return toast.error("Action not permitted");
 
     const form = e.target;
 
     const price = parseFloat(form.price.value);
-    if(price < min_price) return toast.error("Offer price more or at least equal or minimum price!");
+    if (price < min_price) return toast.error("Offer price more or at least equal or minimum price!");
     const email = form.email.value;
     const comment = form.comment.value;
     const status = 'pending';
@@ -42,6 +43,7 @@ const JobDetails = () => {
     try {
       const result = await axios.post(`${import.meta.env.VITE_API_URL}/bid`, bidData);
       console.log(result.data);
+      toast.success("Bid placed successfully!");
     } catch (err) {
       const message = err.message;
       console.log("Hi i am error", message);
@@ -56,7 +58,7 @@ const JobDetails = () => {
       <div className='flex-1 px-6 py-7 md:min-h-[350px]'>
         <div className='flex items-center justify-between'>
           <span className='text-sm font-light text-gray-800 '>
-            Deadline: {deadline.split("T")[0]}
+            Deadline: {new Date(deadline).toLocaleDateString()}
           </span>
           <span className='px-4 py-1 text-xs text-blue-800 uppercase bg-blue-200 rounded-full '>
             {category}
@@ -74,11 +76,16 @@ const JobDetails = () => {
           <p className='mt-6 text-sm font-bold text-gray-600 '>
             Buyer Details:
           </p>
-          <div>
-            <p className='mt-2 text-sm  text-gray-600 '>Name: {buyer_name}.</p>
-            <p className='mt-2 text-sm  text-gray-600 '>
-              Email: {buyer_email}
-            </p>
+          <div className='flex items-center gap-5'>
+            <div>
+              <p className='mt-2 text-sm  text-gray-600 '>Name: {buyer_name}.</p>
+              <p className='mt-2 text-sm  text-gray-600 '>
+                Email: {buyer_email}
+              </p>
+            </div>
+            <div className='rounded-full object-cover overflow-hidden w-14 h-14'>
+              <img src={buyer_photo} alt='' />
+            </div>
           </div>
           <p className='mt-6 text-lg font-bold text-gray-600 '>
             Range: ${min_price} - ${max_price}
