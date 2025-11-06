@@ -1,5 +1,5 @@
 import logo from "../../assets/images/logo.png";
-import { Link, useNavigate } from "react-router";
+import { Link, useLocation, useNavigate } from "react-router";
 import GoogleLogin from "./SocialLogin/GoogleLogin";
 import { useContext, useState } from "react";
 import AuthContext from "../../contexts/AuthContext";
@@ -10,6 +10,9 @@ const Login = () => {
   const { signIn } = useContext(AuthContext);
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
+
+  const from = location.state?.from?.pathname || "/";
 
   const handleSignIn = async (e) => {
     e.preventDefault();
@@ -23,7 +26,7 @@ const Login = () => {
     try {
       const result = await signIn(email, password);
       console.log(result);
-      navigate("/");
+      navigate(from);
       toast.success("Logged in successfully!");
     } catch (err) {
       console.log(err);
