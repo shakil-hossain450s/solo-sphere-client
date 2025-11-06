@@ -1,15 +1,21 @@
 import logo from "../../assets/images/logo.png";
 import { Link, useNavigate } from "react-router";
 import GoogleLogin from "./SocialLogin/GoogleLogin";
-import { useContext, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import toast from "react-hot-toast";
 import AuthContext from "../../contexts/AuthContext";
 
 const Register = () => {
-  const { createUser, updateUserProfile, user, setUser } = useContext(AuthContext);
+  const { createUser, updateUserProfile, user, setUser, loading } = useContext(AuthContext);
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if(user){
+      navigate('/');
+    }
+  }, [user, navigate]);
 
   const handleCreateUser = async (e) => {
     e.preventDefault();
@@ -36,6 +42,9 @@ const Register = () => {
       toast.error(err.code);
     }
   }
+
+  if(user || loading) return;
+
   return (
     <section className='flex justify-center items-center my-10'>
       <div className='flex w-full max-w-sm mx-auto overflow-hidden bg-white rounded-lg shadow-lg  lg:max-w-4xl '>

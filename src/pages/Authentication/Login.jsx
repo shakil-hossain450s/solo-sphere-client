@@ -1,16 +1,22 @@
 import logo from "../../assets/images/logo.png";
 import { Link, useLocation, useNavigate } from "react-router";
 import GoogleLogin from "./SocialLogin/GoogleLogin";
-import { useContext, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import AuthContext from "../../contexts/AuthContext";
 import toast from "react-hot-toast";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 
 const Login = () => {
-  const { signIn } = useContext(AuthContext);
+  const { user, signIn, loading } = useContext(AuthContext);
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
+
+  useEffect(() =>{
+    if(user){
+      navigate("/");
+    }
+  }, [user, navigate]);
 
   const from = location.state?.from?.pathname || "/";
 
@@ -33,6 +39,8 @@ const Login = () => {
       toast.error(err.code);
     }
   }
+
+  if(user || loading) return;
 
   return (
     <section className='flex justify-center items-center my-10'>
