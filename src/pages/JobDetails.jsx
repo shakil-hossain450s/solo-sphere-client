@@ -1,13 +1,57 @@
+import { useContext, useState } from "react";
 import { useLoaderData } from "react-router";
+import AuthContext from "../contexts/AuthContext";
+import DatePicker from "react-datepicker";
+
+import "react-datepicker/dist/react-datepicker.css";
+import axios from "axios";
+import toast from "react-hot-toast";
 
 const JobDetails = () => {
+  const [startDate, setStartDate] = useState(new Date());
+  const { user } = useContext(AuthContext);
   const { job } = useLoaderData();
-  const { job_title, category, deadline, description, min_price, max_price, buyer_name, buyer_email } = job;
+  const { _id, job_title, category, deadline, description, min_price, max_price, buyer_name, buyer_email } = job;
 
-  console.log(job);
+  const handlePlaceBid = async (e) => {
+    if(user?.email === buyer_email) return toast.error("Action not permitted");
+    e.preventDefault();
+
+    const form = e.target;
+
+    const price = parseFloat(form.price.value);
+    if(price < min_price) return toast.error("Offer price more or at least equal or minimum price!");
+    const email = form.email.value;
+    const comment = form.comment.value;
+    const status = 'pending';
+    const jobId = _id;
+    const deadline = startDate;
+
+    const bidData = {
+      jobId,
+      job_title,
+      category,
+      deadline,
+      buyer_email,
+      price,
+      email,
+      comment,
+      status
+    }
+
+    try {
+      const result = await axios.post(`${import.meta.env.VITE_API_URL}/bid`, bidData);
+      console.log(result.data);
+    } catch (err) {
+      const message = err.message;
+      console.log("Hi i am error", message);
+
+    }
+
+  }
 
   return (
-    <div className='bg-white rounded-md shadow-md my-12 border border-base-200 flex flex-col md:flex-row justify-around gap-5  items-center md:max-w-7xl mx-auto '>
+    <div className='bg-white rounded-md shadow-md my-12 border border-base-200 flex flex-col md:flex-row justify-around gap-5 items-center md:max-w-7xl mx-auto '>
       {/* Job Details */}
       <div className='flex-1 px-6 py-7 md:min-h-[350px]'>
         <div className='flex items-center justify-between'>
@@ -30,16 +74,11 @@ const JobDetails = () => {
           <p className='mt-6 text-sm font-bold text-gray-600 '>
             Buyer Details:
           </p>
-          <div className='flex items-center gap-5'>
-            <div>
-              <p className='mt-2 text-sm  text-gray-600 '>Name: {buyer_name}.</p>
-              <p className='mt-2 text-sm  text-gray-600 '>
-                Email: {buyer_email}
-              </p>
-            </div>
-            <div className='rounded-full object-cover overflow-hidden w-14 h-14'>
-              <img src='' alt='' />
-            </div>
+          <div>
+            <p className='mt-2 text-sm  text-gray-600 '>Name: {buyer_name}.</p>
+            <p className='mt-2 text-sm  text-gray-600 '>
+              Email: {buyer_email}
+            </p>
           </div>
           <p className='mt-6 text-lg font-bold text-gray-600 '>
             Range: ${min_price} - ${max_price}
@@ -52,7 +91,7 @@ const JobDetails = () => {
           Place A Bid
         </h2>
 
-        <form>
+        <form onSubmit={handlePlaceBid}>
           <div className='grid grid-cols-1 gap-6 mt-4 sm:grid-cols-2'>
             <div>
               <label className='text-gray-700 ' htmlFor='price'>
@@ -75,6 +114,7 @@ const JobDetails = () => {
                 type='email'
                 name='email'
                 disabled
+                defaultValue={user?.email}
                 className='block w-full px-4 py-2 mt-2 text-gray-700 bg-white border border-gray-200 rounded-md   focus:border-blue-400 focus:ring-blue-300 focus:ring-opacity-40  focus:outline-none focus:ring'
               />
             </div>
@@ -94,13 +134,7 @@ const JobDetails = () => {
               <label htmlFor="deadline" className='text-gray-700'>Deadline</label>
 
               {/* Date Picker Input Field */}
-              <input 
-              className="block w-full px-4 py-2 text-gray-700 bg-white border border-gray-200 rounded-md   focus:border-blue-400 focus:ring-blue-300 focus:ring-opacity-40  focus:outline-none focus:ring" 
-              type="date" 
-              name="deadline" 
-              id="deadline"
-              defaultValue={deadline.split("T")[0]}
-               />
+              <DatePicker className="block w-full px-4 py-2 text-gray-700 bg-white border border-gray-200 rounded-md focus:border-blue-400 focus:ring-blue-300 focus:ring-opacity-40  focus:outline-none focus:ring" selected={startDate} onChange={(date) => setStartDate(date)} />
             </div>
           </div>
 
