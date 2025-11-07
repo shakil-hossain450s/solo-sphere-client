@@ -4,6 +4,7 @@ import {
 } from 'firebase/auth'
 import AuthContext from '../contexts/AuthContext'
 import { auth } from '../firebase/firebase.config'
+import axios from 'axios'
 const googleProvider = new GoogleAuthProvider()
 
 const AuthProvider = ({ children }) => {
@@ -31,6 +32,10 @@ const AuthProvider = ({ children }) => {
   // logout user
   const logOut = async () => {
     setLoading(true);
+    await axios(
+      `${import.meta.env.VITE_API_URL}/logout`,
+      { withCredentials: true }
+    );
     return signOut(auth);
   }
 
