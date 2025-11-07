@@ -1,6 +1,6 @@
 
 
-const MyBidsRow = ({ bid }) => {
+const MyBidsRow = ({ bid, handleStatusChange }) => {
   const { _id, job_title, category, deadline, price, status } = bid;
   return (
     <tr>
@@ -9,7 +9,7 @@ const MyBidsRow = ({ bid }) => {
       </td>
 
       <td className='px-4 py-4 text-sm text-gray-500  whitespace-nowrap'>
-        {deadline}
+        {new Date(deadline).toLocaleDateString()}
       </td>
 
       <td className='px-4 py-4 text-sm text-gray-500  whitespace-nowrap'>
@@ -18,26 +18,38 @@ const MyBidsRow = ({ bid }) => {
       <td className='px-4 py-4 text-sm whitespace-nowrap'>
         <div className='flex items-center gap-x-2'>
           <p
-            className={`px-3 py-1  text-blue-500 bg-blue-100/60 text-xs  rounded-full`}
+            className={`px-3 py-1 rounded-full 
+              ${category === "Web Development" && " text-blue-500 bg-blue-100/60 text-xs"}
+              ${category === "Graphics Design" && " text-pink-500 bg-pink-100/60 text-xs"}
+              ${category === "Digital Marketing" && " text-green-500 bg-green-100/60 text-xs"}
+            `}
           >
             {category}
           </p>
         </div>
       </td>
       <td className='px-4 py-4 text-sm font-medium text-gray-700 whitespace-nowrap'>
-        <div
-          className={`inline-flex items-center px-3 py-1 rounded-full gap-x-2 bg-yellow-100/60 text-yellow-500`}
-        >
-          <span
-            className={`h-1.5 w-1.5 rounded-full bg-yellow-500 `}
-          ></span>
+        <div className={`inline-flex items-center px-3 py-1 rounded-full gap-x-2 
+            ${status.toLowerCase() === "pending".toLowerCase() && "bg-yellow-100/60 text-yellow-500"}
+            ${status.toLowerCase() === "in progress".toLowerCase() && "bg-blue-100/60 text-blue-500"}
+            ${status.toLowerCase() === "complete".toLowerCase() && "bg-green-100/60 text-green-500"}
+            ${status.toLowerCase() === "rejected".toLowerCase() && "bg-red-100/60 text-red-500"}
+          `}>
+          <span className={`h-1.5 w-1.5 rounded-full 
+              ${status.toLowerCase() === "pending".toLowerCase() && "bg-yellow-500"}
+              ${status.toLowerCase() === "in progress".toLowerCase() && "bg-blue-500"}
+              ${status.toLowerCase() === "complete".toLowerCase() && "bg-green-500"}
+              ${status.toLowerCase() === "rejected".toLowerCase() && "bg-red-500"}
+            `}></span>
           <h2 className='text-sm font-normal '>{status}</h2>
         </div>
       </td>
       <td className='px-4 py-4 text-sm whitespace-nowrap'>
         <button
+          onClick={() => handleStatusChange(_id, status, "complete")}
+          disabled={status !== "in progress"}
           title='Mark Complete'
-          className='text-gray-500 transition-colors duration-200   hover:text-red-500 focus:outline-none disabled:cursor-not-allowed'
+          className='cursor-pointer text-gray-500 transition-colors duration-200 hover:text-red-500 focus:outline-none disabled:cursor-not-allowed'
         >
           <svg
             xmlns='http://www.w3.org/2000/svg'
