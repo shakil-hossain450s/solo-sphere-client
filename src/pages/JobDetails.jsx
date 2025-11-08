@@ -1,15 +1,14 @@
-import { useContext, useState } from "react";
+import { useState } from "react";
 import { useLoaderData, useNavigate } from "react-router";
-import AuthContext from "../contexts/AuthContext";
 import DatePicker from "react-datepicker";
-
-import "react-datepicker/dist/react-datepicker.css";
 import axios from "axios";
 import toast from "react-hot-toast";
+import useAuth from "../hooks/useAuth";
+import "react-datepicker/dist/react-datepicker.css";
 
 const JobDetails = () => {
   const [startDate, setStartDate] = useState(new Date());
-  const { user } = useContext(AuthContext);
+  const { user } = useAuth();
   const { job } = useLoaderData();
   const { _id, job_title, category, deadline, description, min_price, max_price, buyer_info: { buyer_name, buyer_email, buyer_photo } } = job;
   const navigate = useNavigate();

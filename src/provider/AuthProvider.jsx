@@ -54,8 +54,8 @@ const AuthProvider = ({ children }) => {
         try {
           const { data } = await axios.post(
             `${import.meta.env.VITE_API_URL}/jwt`,
-            { email: currentUser.email },
-            { withCredentials: true }
+            { email: currentUser.email }, // body
+            { withCredentials: true } // for cookie
           );
           console.log(data);
         } catch (err) {
@@ -65,11 +65,14 @@ const AuthProvider = ({ children }) => {
         // if user logs out
         await axios.post(
           `${import.meta.env.VITE_API_URL}/logout`,
+          {},
           { withCredentials: true }
         );
       }
 
-    })
+    });
+
+
     return () => unsubscribe();
   }, [])
 

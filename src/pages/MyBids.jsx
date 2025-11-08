@@ -1,12 +1,12 @@
-import { useContext, useEffect, useState } from "react"
-import AuthContext from "../contexts/AuthContext";
+import {  useEffect, useState } from "react"
+import useAuth from "../hooks/useAuth";
 import axios from "axios";
 import MyBidsRow from "../components/MyBidsRow";
 import { Link } from "react-router";
 import toast from "react-hot-toast";
 
 const MyBids = () => {
-  const { user } = useContext(AuthContext);
+  const {user} = useAuth();
   const [bidsData, setBidsData] = useState([]);
   useEffect(() => {
     const getData = async () => {

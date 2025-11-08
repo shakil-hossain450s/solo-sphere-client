@@ -1,12 +1,12 @@
-import { useContext, useEffect, useState } from "react";
-import AuthContext from "../contexts/AuthContext";
+import { useEffect, useState } from "react";
+import useAuth from "../hooks/useAuth";
 import axios from "axios";
 import PostedJobsRow from "../components/PostedJobsRow";
 import toast from "react-hot-toast";
 import { Link } from "react-router";
 
 const MyPostedJobs = () => {
-  const { user } = useContext(AuthContext);
+  const {user} = useAuth();
   const [jobs, setJobs] = useState([]);
 
   useEffect(() => {
