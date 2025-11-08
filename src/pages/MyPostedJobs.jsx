@@ -11,12 +11,15 @@ const MyPostedJobs = () => {
 
   useEffect(() => {
     const getJobs = async () => {
-      const { data } = await axios(`${import.meta.env.VITE_API_URL}/jobs/${user?.email}`, {withCredentials: true})
+      const { data } = await axios(
+        `${import.meta.env.VITE_API_URL}/my-posted-jobs/${user.email}`,
+        { withCredentials: true }
+      )
       const { jobs: jobsData } = data;
       setJobs(jobsData);
     }
     getJobs();
-  }, [user?.email]);
+  }, [user]);
 
   const handleDeleteJob = async (id) => {
 

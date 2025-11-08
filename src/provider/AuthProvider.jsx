@@ -32,10 +32,6 @@ const AuthProvider = ({ children }) => {
   // logout user
   const logOut = async () => {
     setLoading(true);
-    await axios(
-      `${import.meta.env.VITE_API_URL}/logout`,
-      { withCredentials: true }
-    );
     return signOut(auth);
   }
 
@@ -49,10 +45,30 @@ const AuthProvider = ({ children }) => {
 
   // onAuthStateChange
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, currentUser => {
+    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       setUser(currentUser);
       setLoading(false);
       console.log('CurrentUser-->', currentUser);
+
+      if (currentUser?.email) {
+        try {
+          const { data } = await axios.post(
+            `${import.meta.env.VITE_API_URL}/jwt`,
+            { email: currentUser.email },
+            { withCredentials: true }
+          );
+          console.log(data);
+        } catch (err) {
+          console.error("JWT setup error:", err);
+        }
+      } else {
+        // if user logs out
+        await axios.post(
+          `${import.meta.env.VITE_API_URL}/logout`,
+          { withCredentials: true }
+        );
+      }
+
     })
     return () => unsubscribe();
   }, [])
