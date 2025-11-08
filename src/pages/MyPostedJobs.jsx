@@ -1,30 +1,31 @@
 import { useEffect, useState } from "react";
 import useAuth from "../hooks/useAuth";
-import axios from "axios";
 import PostedJobsRow from "../components/PostedJobsRow";
 import toast from "react-hot-toast";
 import { Link } from "react-router";
+import useAxiosSecure from "../hooks/useAxiosSecure";
 
 const MyPostedJobs = () => {
-  const {user} = useAuth();
+  const axiosInstance = useAxiosSecure();
+  const { user } = useAuth();
   const [jobs, setJobs] = useState([]);
 
   useEffect(() => {
+
     const getJobs = async () => {
-      const { data } = await axios(
-        `${import.meta.env.VITE_API_URL}/my-posted-jobs/${user.email}`,
-        { withCredentials: true }
+      const { data } = await axiosInstance(
+        `/my-posted-jobs/${user.email}`,
       )
       const { jobs: jobsData } = data;
       setJobs(jobsData);
     }
     getJobs();
-  }, [user]);
+  }, []);
 
   const handleDeleteJob = async (id) => {
 
     try {
-      const result = await axios.delete(`${import.meta.env.VITE_API_URL}/job/${id}`);
+      const result = await axiosInstance.delete(`/job/${id}`);
       if (result.data.success) {
         const remaining = jobs.filter(job => job._id !== id);
         setJobs(remaining);
