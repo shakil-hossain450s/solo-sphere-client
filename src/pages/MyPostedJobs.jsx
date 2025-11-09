@@ -20,7 +20,7 @@ const MyPostedJobs = () => {
       setJobs(jobsData);
     }
     getJobs();
-  }, []);
+  }, [axiosInstance, user]);
 
   const handleDeleteJob = async (id) => {
 
