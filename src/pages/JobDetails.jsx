@@ -1,10 +1,10 @@
 import { useState } from "react";
 import { useLoaderData, useNavigate } from "react-router";
 import DatePicker from "react-datepicker";
-import axios from "axios";
 import toast from "react-hot-toast";
 import useAuth from "../hooks/useAuth";
 import "react-datepicker/dist/react-datepicker.css";
+import useAxiosSecure from "../hooks/useAxiosSecure";
 
 const JobDetails = () => {
   const [startDate, setStartDate] = useState(new Date());
@@ -12,6 +12,7 @@ const JobDetails = () => {
   const { job } = useLoaderData();
   const { _id, job_title, category, deadline, description, min_price, max_price, buyer_info: { buyer_name, buyer_email, buyer_photo } } = job;
   const navigate = useNavigate();
+  const axiosInstance = useAxiosSecure();
 
   const handlePlaceBid = async (e) => {
     e.preventDefault();
@@ -41,13 +42,14 @@ const JobDetails = () => {
     }
 
     try {
-      const result = await axios.post(`${import.meta.env.VITE_API_URL}/bid`, bidData);
+      const result = await axiosInstance.post(`/bid`, bidData);
       console.log(result.data);
       toast.success("Bid placed successfully!");
       navigate("/my-bids");
     } catch (err) {
-      const message = err.message;
-      console.log("Hi i am error", message);
+      const message = err.response.data.message;
+      // console.log();
+      // console.log("Hi i am error", message);
       toast.error(message);
     }
 

@@ -4,14 +4,17 @@ import axios from "axios";
 import MyBidsRow from "../components/MyBidsRow";
 import { Link } from "react-router";
 import toast from "react-hot-toast";
+import useAxiosSecure from "../hooks/useAxiosSecure";
 
 const MyBids = () => {
   const {user} = useAuth();
   const [bidsData, setBidsData] = useState([]);
+  const axiosInstance = useAxiosSecure();
+
   useEffect(() => {
     const getData = async () => {
       try {
-        const { data } = await axios.get(`${import.meta.env.VITE_API_URL}/bids?email=${user?.email}`)
+        const { data } = await axiosInstance(`/bids?email=${user?.email}`)
         const { bids } = data;
         setBidsData(bids);
       } catch (err) {

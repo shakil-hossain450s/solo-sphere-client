@@ -1,51 +1,130 @@
-import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
-import axios from "axios";
 import BidsRequestsRow from "../components/BidsRequestsRow";
 import { Link } from "react-router";
 import useAuth from "../hooks/useAuth";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import useAxiosSecure from "../hooks/useAxiosSecure";
+import Loader from "../components/Loader";
 
 const BidRequests = () => {
-  const {user} = useAuth();
-  const [bidsRequests, setBidsRequests] = useState([]);
+  const { user } = useAuth();
+  const axiosInstance = useAxiosSecure();
+  const queryClient = useQueryClient();
 
-  useEffect(() => {
-    const getData = async () => {
-      try {
-        const { data } = await axios.get(`${import.meta.env.VITE_API_URL}/bids-requests?email=${user?.email}`);
-        const { bids } = data;
-        setBidsRequests(bids);
-      } catch (err) {
-        console.log(err);
-        toast.error(err.message);
-      }
-    }
-    getData();
-  }, [user]);
-
-  const handleBidRequests = async (id, previousStatus, status) => {
-    console.log(id, previousStatus, status);
-
-    if(previousStatus === status) return;
-
+  const getData = async () => {
     try {
-      const { data } = await axios.patch(`${import.meta.env.VITE_API_URL}/update-bid-status/${id}`, { status });
-      const { success } = data;
-      if (success) {
-        toast.success(status.charAt(0).toUpperCase() + status.slice(1));
-        // setBidsRequests(bidsRequests.map(bid => bid._id === id ? { ...bid, status } : bid));
-        // setBidsRequests(prev => {
-        //   return prev.map(bid => bid._id === id ? { ...bid, status } : bid)
-        // })
-        const updated = bidsRequests.map(bid => bid._id === id ? { ...bid, status } : bid);
-        setBidsRequests(updated);
-      }
-      console.log(data);
+      const { data } = await axiosInstance.get(`/bids-requests?email=${user?.email}`);
+      const { bids } = data;
+      return bids;
     } catch (err) {
-      console.log(err.message);
+      console.log(err);
       toast.error(err.message);
     }
   }
+
+  const {
+    data: bidsRequests = [],
+    isLoading,
+    isError,
+    error
+  } = useQuery({
+    queryKey: ['bids'],
+    queryFn: () => getData()
+  });
+
+  // const [bidsRequests, setBidsRequests] = useState([]);
+
+  // useEffect(() => {
+  //   const getData = async () => {
+  //     try {
+  //       const { data } = await axios.get(`${import.meta.env.VITE_API_URL}/bids-requests?email=${user?.email}`);
+  //       const { bids } = data;
+  //       return bids;
+  //     } catch (err) {
+  //       console.log(err);
+  //       toast.error(err.message);
+  //     }
+  //   }
+  //   getData();
+  // }, [user]);
+
+  console.log(bidsRequests);
+
+  const { mutateAsync } = useMutation({
+    mutationFn: async ({ id, status }) => {
+      const { data } = await axiosInstance.patch(`/update-bid-status/${id}`, { status });
+      return data.result;
+    },
+    onMutate: async (varibales) => {
+      console.log('after clicked', varibales);
+
+      // step-1: stop any ongoing refetch for the data
+      await queryClient.cancelQueries(['bids']);
+
+      // step-2: save the current data
+      const previousBids = await queryClient.getQueryData(['bids']);
+
+      // step-3: instantly refresh the ui
+      queryClient.setQueryData(['bids'], oldData => {
+        return oldData.map(bid =>
+          bid._id === varibales.id ? (
+            { ...bid, status: varibales.status }
+          ) : (
+            bid
+          )
+        )
+      });
+
+      // step-4: return the previous data as a object
+      return { previousBids };
+    },
+    onSuccess: (bid) => {
+      console.log(bid);
+      toast.success(bid.status.charAt(0).toUpperCase() + bid.status.slice(1));
+    },
+    onError: (error, varibales, context) => {
+      queryClient.setQueryData(['bids'], context.previousBids);
+      console.log("Failed to update data", error.message);
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries(['bids']);
+    }
+  })
+
+
+
+  const handleBidRequests = async (id, previousStatus, status) => {
+    console.log(id, previousStatus, status);
+    if (previousStatus === status) return;
+
+    await mutateAsync({ id, status });
+
+    // try {
+    //   const { data } = await axiosInstance.patch(`/update-bid-status/${id}`, { status });
+    //   const { success } = data;
+    //   if (success) {
+    //     toast.success(status.charAt(0).toUpperCase() + status.slice(1));
+
+    //     refetch();
+
+    //     // setBidsRequests(bidsRequests.map(bid => bid._id === id ? { ...bid, status } : bid));
+    //     // setBidsRequests(prev => {
+    //     //   return prev.map(bid => bid._id === id ? { ...bid, status } : bid)
+    //     // })
+    //     // const updated = bidsRequests.map(bid => bid._id === id ? { ...bid, status } : bid);
+    //     // setBidsRequests(updated);
+    //   }
+    // } catch (err) {
+    //   console.log(err.message);
+    //   toast.error(err.message);
+    // }
+  }
+
+  if (isError || error) {
+    console.log('isError', isError, 'error', error);
+  }
+
+  if (isLoading) return <Loader />
 
   return (
     <section className='container px-4 mx-auto my-12'>
